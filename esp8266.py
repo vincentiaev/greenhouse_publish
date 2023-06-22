@@ -1,3 +1,4 @@
+
 from machine import Pin, ADC
 from time import sleep, ticks_us
 import network
@@ -12,14 +13,19 @@ import dht
 esp.osdebug(None)
 gc.collect()
 
+
 ssid = 'PCU_Sistem_Kontrol'
 password = 'lasikonn'
+
+#ssid = 'PCU_Sistem_Kontrol'
+#password = 'lasikonn'
 station = network.WLAN(network.STA_IF)
 station.active(True)
 station.connect(ssid,password)
 
 sensor_dht = dht.DHT11(Pin(14)) #pin d5
 soil_sensor = ADC(0) #pin A0
+relay = Pin(12, Pin.OUT)
 
 while station.isconnected() == False:
   pass
@@ -30,7 +36,7 @@ print(station.ifconfig())
 
 broker = '192.168.41.70'
 clientid = ubinascii.hexlify(machine.unique_id())
-topicsub = b'4170/dht11/temp'
+topicsub = b'btnState'
 topicpub_temp = b'4170/dht11/temp'
 topicpub_hum = b'4170/dht11/hum'
 topicpub_soil = b'4170/soil'
@@ -39,7 +45,10 @@ topicpub_flow = b'4170/flow'
 
 def subscribecallback(topic, msg):
   print(topic, msg)
-  # if topic == b'.....' and msg == b'.....'
+  if topic == b'btnState' and msg == b'0':
+    relay.value(1)
+  elif topic == b'btnState' and msg == b'1':
+    relay.value(0)
   #   .....
   
 def connect():
@@ -114,7 +123,3 @@ while True:
         
   except OSError as e:
     restartandconnect()
-    
-
-
-
